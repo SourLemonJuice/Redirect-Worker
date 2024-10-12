@@ -8,9 +8,14 @@ class RedirectUnit {
 }
 
 const redirect_list = [
-    new RedirectUnit('/demo', 'https://example.com', 302, true),
-    new RedirectUnit('/github/', 'https://example.com', 302, true), // TODO format those url, then it should be works
+    new RedirectUnit('/demo', 'https://example.com', 302, false),
+    new RedirectUnit('/github', 'https://github.com', 302, true),
 ]
+
+function noRouter(url) {
+    console.error("Invalid router path: " + url.pathname)
+    return new Response('No Router', { status: 404 })
+}
 
 export default {
     async fetch(request) {
@@ -25,7 +30,7 @@ export default {
             }
         }
         if (matched_unit == undefined) {
-            return new Response('No Router', { status: 404 })
+            return noRouter(url)
         }
 
         let destination_url = `${matched_unit.destination}`
@@ -33,7 +38,7 @@ export default {
             destination_url += pathname.substring(matched_unit.router.length) + search
         }
 
-        console.log('Redirect' + matched_unit + 'to' + destination_url)
+        console.log('Redirect ' + matched_unit.router + ' -> ' + destination_url)
         return Response.redirect(destination_url, matched_unit.status)
     },
 }
