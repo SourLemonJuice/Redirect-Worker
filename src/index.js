@@ -24,13 +24,16 @@ export default {
                 break
             }
         }
-        if (matched_unit == undefined) return new Response('No Router', { status: 404 })
+        if (matched_unit == undefined) {
+            return new Response('No Router', { status: 404 })
+        }
 
         let destination_url = `${matched_unit.destination}`
-        if (matched_unit.path_retention == true)
+        if (matched_unit.path_retention == true) {
             destination_url += pathname.substring(matched_unit.router.length) + search
+        }
 
-        console.log('Redirect to' + destination_url)
+        console.log('Redirect' + matched_unit + 'to' + destination_url)
         return Response.redirect(destination_url, matched_unit.status)
     },
 }
