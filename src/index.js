@@ -1,20 +1,35 @@
 class RedirectUnit {
-    constructor(router, destination, status, path_retention) {
-        this.router = router
+    constructor(destination, status, path_forwarding) {
         this.destination = destination
         this.status = status
-        this.path_retention = path_retention
+        this.path_forwarding = path_forwarding
     }
 }
 
-const redirect_list = [
-    new RedirectUnit('/demo', 'https://example.com', 302, false),
-    new RedirectUnit('/github', 'https://github.com', 302, true),
-]
+const redirect_tree = {
+    '/demo': new RedirectUnit('https://example.com', 302, false),
+    '/github': new RedirectUnit('https://github.com', 302, true),
+    '/sub': {
+        '/google': new RedirectUnit('https://about.google', 302, false),
+    },
+}
 
-function noRouter(url) {
-    console.error("Invalid router path: " + url.pathname)
+function noRouterError(url) {
+    console.error('Invalid router path: ' + url.pathname)
     return new Response('No Router', { status: 404 })
+}
+
+/*
+    Return the key(not value) of the matched node
+*/
+function scanRedirectTreeLayer(node, path) {
+    for (const router in node) {
+        if (path.startsWith(router)) {
+            return router
+        }
+    }
+
+    return null
 }
 
 export default {
@@ -22,23 +37,28 @@ export default {
         const url = new URL(request.url)
         const { pathname, search } = url
 
-        let matched_unit
-        for (let unit of redirect_list) {
-            if (pathname.startsWith(unit.router) == true) {
-                matched_unit = unit
-                break
+        // parse the config tree
+        let node = redirect_tree
+        let remaining_path = pathname
+        while (true) {
+            let node_key = scanRedirectTreeLayer(node, remaining_path)
+            if (node_key == null) {
+                return noRouterError(url)
             }
-        }
-        if (matched_unit == undefined) {
-            return noRouter(url)
+            remaining_path = remaining_path.slice(node_key.length)
+
+            node = node[node_key]
+            if (node instanceof RedirectUnit) break
+            // I Hate Prettier... Why Can't We Keep The Line Break?
         }
 
-        let destination_url = `${matched_unit.destination}`
-        if (matched_unit.path_retention == true) {
-            destination_url += pathname.substring(matched_unit.router.length) + search
+        // prepare redirect URL
+        let destination_url = node.destination
+        if (node.path_forwarding == true) {
+            destination_url += `${remaining_path}${search}`
         }
 
-        console.log('Redirect ' + matched_unit.router + ' -> ' + destination_url)
-        return Response.redirect(destination_url, matched_unit.status)
+        console.log(`Redirect ${pathname} -> ${destination_url}`)
+        return Response.redirect(destination_url, node.status)
     },
 }
