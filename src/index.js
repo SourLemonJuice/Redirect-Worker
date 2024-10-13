@@ -11,10 +11,12 @@ class RedirectUnit {
 
 const redirect_tree = {
     '/demo': new RedirectUnit('https://example.com', 302, false),
+    '/demoinfo': new RedirectUnit('https://www.iana.org/help/example-domains', 302, false),
     '/github': new RedirectUnit('https://github.com', 302, true),
     '/sub': {
         '/google': new RedirectUnit('https://about.google', 302, false),
     },
+    // '/sub/sub2' is also ok
 }
 
 function noRouterError(url) {
@@ -27,7 +29,12 @@ function noRouterError(url) {
 */
 function scanRedirectTreeLayer(node, path) {
     for (const router in node) {
-        if (path.startsWith(router)) {
+        // e.g. /sub in /demo/sub
+        if (path === router) {
+            return router
+        }
+        // e.g. /demo/ in /demo/sub
+        if (path.startsWith(`${router}/`)) {
             return router
         }
     }
