@@ -1,7 +1,10 @@
 class RedirectUnit {
     constructor(destination, status, path_forwarding) {
+        // e.g. https://example.com
         this.destination = destination
+        // 302, 301, 307 or 308
         this.status = status
+        // retention the extra path: /demo/other_load?xxx -> /destination/other_load?xxx
         this.path_forwarding = path_forwarding
     }
 }
@@ -49,7 +52,6 @@ export default {
 
             node = node[node_key]
             if (node instanceof RedirectUnit) break
-            // I Hate Prettier... Why Can't We Keep The Line Break?
         }
 
         // prepare redirect URL
