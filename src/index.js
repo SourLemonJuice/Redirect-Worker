@@ -16,7 +16,6 @@ const redirect_tree = {
     '/sub': {
         '/google': new RedirectUnit('https://about.google', 302, false),
     },
-    // '/sub/sub2' is also ok
 }
 
 function noRouterError(url) {
@@ -26,20 +25,14 @@ function noRouterError(url) {
 
 /*
     Return the key(not value) of the matched node
+
+    Hash table ⊂⁠(⁠(⁠・⁠▽⁠・⁠)⁠)⁠⊃
 */
 function scanRedirectTreeLayer(node, path) {
-    for (const router in node) {
-        // e.g. /sub in /demo/sub
-        if (path === router) {
-            return router
-        }
-        // e.g. /demo/ in /demo/sub
-        if (path.startsWith(`${router}/`)) {
-            return router
-        }
-    }
+    let router_end = path.indexOf('/', 1)
+    let router = path.slice(0, router_end !== -1 ? router_end : undefined)
 
-    return null
+    return node[router] !== undefined ? router : null
 }
 
 export default {
