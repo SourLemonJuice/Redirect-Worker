@@ -20,7 +20,7 @@ const redirect_tree = {
 
 function noRouterError(url) {
     console.error('Invalid router path: ' + url.pathname)
-    return new Response('Request URL invalid: ' + url.pathname, { status: 400 })
+    return new Response('Request URI invalid', { status: 400 })
 }
 
 /*
